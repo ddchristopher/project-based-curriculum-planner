@@ -20,18 +20,32 @@ export default function exportToPDF (lesson) {
 	function formatStages(stage) {
 		let questions = ''
 		let answers = ''
+		stage = Object.values(stage)
 		for (let question of stage) {
 			question = question ? question : {answers: [{answer: '', content: ''}], question: ''}
-			question.answers.forEach((answer) => {
-				answers = answers.concat(`
+			if (!question.answers) {
+				if (question.duration) {
+					questions = questions.concat(`
+				<h5>Duration: ${question.duration}</h5>
+			`)
+				}
+				else {
+					continue
+				}
+			}
+			if (question.answers) {
+				question.answers.forEach((answer) => {
+					answers = answers.concat(`
 				<h4>${answer.content}</h4>
 				<p>${answer.answer}</p>
 			`)
-			})
-			questions = questions.concat(`
+				})
+				questions = questions.concat(`
 				<h3>${question.question}</h3>
 				${answers}
 			`)
+			}
+
 			answers = ''
 		}
 
@@ -49,7 +63,7 @@ export default function exportToPDF (lesson) {
 <div>
 	<h1>${lesson.title}</h1>
 	<h2>Stage 1: Building the field</h2>
-	<div>${stage1}</div>	
+	<div>${stage2}</div>	
 		
 </div>
 `;
@@ -59,7 +73,7 @@ export default function exportToPDF (lesson) {
 <div>
 	<h1>${lesson.title}</h1>
 	<h2>Stage 2: Introducing and Practicing Academic Discourse and Skills</h2>	
-	<div>${stage2}</div>
+	<div>${stage3}</div>
 </div>
 `;
 
@@ -68,7 +82,7 @@ export default function exportToPDF (lesson) {
 <div>
 	<h1>${lesson.title}</h1>
 	<h2>Stage 3: Joint Construction</h2>
-	<div>${stage3}</div>	
+	<div>${stage4}</div>	
 		
 </div>
 `;
@@ -78,32 +92,36 @@ export default function exportToPDF (lesson) {
 <div>
 	<h1>${lesson.title}</h1>
 	<h2>Stage 4: Independent Production & Assessment</h2>
-	<div>${stage4}</div>	
+	<div>${stage1}</div>	
 		
 </div>
 `;
 
 	doc.fromHTML(
 		page1, 15, 15, {
-			'elementHandlers': specialElementHandlers
+			'elementHandlers': specialElementHandlers,
+			pagesplit: true,'width': 175
 		}
 	);
 	doc.addPage('a4','p');
 	doc.fromHTML(
 		page2, 15, 15, {
-			'elementHandlers': specialElementHandlers
+			'elementHandlers': specialElementHandlers,
+			pagesplit: true,'width': 175
 		}
 	);
 	doc.addPage('a4','p');
 	doc.fromHTML(
 		page3, 15, 15, {
-			'elementHandlers': specialElementHandlers
+			'elementHandlers': specialElementHandlers,
+			pagesplit: true,'width': 175
 		}
 	);
 	doc.addPage('a4','p');
 	doc.fromHTML(
 		page4, 15, 15, {
-			'elementHandlers': specialElementHandlers
+			'elementHandlers': specialElementHandlers,
+			pagesplit: true,'width': 175
 		}
 	);
 

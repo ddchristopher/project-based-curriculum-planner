@@ -1,12 +1,12 @@
 import firebase from 'firebase'
 
 const config = {
-	apiKey: "AIzaSyBAy8OJpBF92KMrIZADv0npaNwTK-IsWMI",
-	authDomain: "project-based-plann.firebaseapp.com",
-	databaseURL: "https://project-based-plann.firebaseio.com",
-	projectId: "project-based-plann",
-	storageBucket: "project-based-plann.appspot.com",
-	messagingSenderId: "1047477395421"
+		apiKey: "AIzaSyCg6guYihfCxGo-DxJsYQhF4i4v2Lt4uSk",
+		authDomain: "inps-lesson-planner.firebaseapp.com",
+		databaseURL: "https://inps-lesson-planner.firebaseio.com",
+		projectId: "inps-lesson-planner",
+		storageBucket: "inps-lesson-planner.appspot.com",
+		messagingSenderId: "18542274350"
 	};
 firebase.initializeApp(config);
 export default firebase

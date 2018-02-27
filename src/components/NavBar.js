@@ -7,12 +7,11 @@ import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import MenuIcon from 'material-ui-icons/Menu';
-import AccountCircle from 'material-ui-icons/AccountCircle'
 import Menu, { MenuItem } from 'material-ui/Menu';
 import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
 import { compose } from 'redux'
 import { connect } from 'react-redux'
-import { firebaseConnect, isLoaded, isEmpty } from 'react-redux-firebase'
+import { firebaseConnect } from 'react-redux-firebase'
 import { Link } from 'react-router-dom'
 import exportToPDF from '../utils/exportToPDF'
 import DashboardIcon from 'material-ui-icons/Dashboard';
@@ -20,6 +19,7 @@ import DownloadIcon from 'material-ui-icons/FileDownload';
 import MediaQuery from 'react-responsive';
 import Drawer from 'material-ui/Drawer';
 import Divider from 'material-ui/Divider';
+import Avatar from 'material-ui/Avatar';
 
 const styles = {
 	root: {
@@ -44,7 +44,6 @@ const styles = {
 class NavBar extends React.Component {
 
 	state = {
-		anchorLessons: null,
 		anchorEl: null,
 		left: false,
 	};
@@ -53,16 +52,8 @@ class NavBar extends React.Component {
 		this.setState({ anchorEl: event.currentTarget });
 	};
 
-	handleLessonsMenu = (event) => {
-		this.setState({ anchorLessons: event.currentTarget });
-	};
-
 	handleClose = () => {
 		this.setState({ anchorEl: null });
-	};
-
-	handleCloseLessons = () => {
-		this.setState({ anchorLessons: null });
 	};
 
 	openDrawer = () => {
@@ -78,30 +69,24 @@ class NavBar extends React.Component {
 	}
 
 	render () {
-		const { classes, firebase, auth, profile, onDashboard, currentLesson } = this.props;
-		const lessons = !isLoaded(profile) ?
-			(['Loading...']) :
-			isEmpty(profile) ? (['Loading...']):
-				profile.lessons ?
-					(Object.keys(profile.lessons).map((lesson) => {
-						return profile.lessons[lesson].title
-					})) : []
-
-
-		const { anchorEl, anchorLessons } = this.state;
+		const { classes, firebase, profile, onDashboard, newLesson, currentLesson } = this.props;
+		const { anchorEl } = this.state;
 		const open = Boolean(anchorEl);
-		const openLessons = Boolean(anchorLessons)
 		return (
 			<div>
 				<div className={classes.root}>
-					<AppBar position="static">
+					<AppBar
+						className='top-bar'
+						elevation={1}
+						color='inherit'
+						position="fixed">
 						<Toolbar>
 
-							<MediaQuery minDeviceWidth={900}>
+							<MediaQuery minWidth={900}>
 								{(matches) => {
 									if (matches) {
 										return (
-												<Typography type="title" color="inherit" className={classes.flex}>
+												<Typography type="title" color="default" className={classes.flex}>
 													Project Based Curriculum Planner
 											</Typography>
 										);
@@ -109,10 +94,9 @@ class NavBar extends React.Component {
 										return (
 											<IconButton
 												className={classes.menuButton}
-												color="contrast"
+												color="default"
 												aria-label="Menu"
 												onClick={() => {
-													console.log('hello')
 													this.openDrawer()
 												}}
 											>
@@ -124,7 +108,7 @@ class NavBar extends React.Component {
 							</MediaQuery>
 
 
-							<MediaQuery minDeviceWidth={900}>
+							<MediaQuery minWidth={900}>
 								{(matches) => {
 									if (matches) {
 										return (
@@ -134,7 +118,7 @@ class NavBar extends React.Component {
 													state: { newLesson: true }
 												}}>
 													<Button
-														color="contrast"
+														color="default"
 													>
 														My Dashboard
 														<DashboardIcon style={{marginLeft: '5px'}}/>
@@ -142,11 +126,11 @@ class NavBar extends React.Component {
 													</Button>
 												</Link>}
 
-												{!onDashboard &&
+												{!onDashboard && !newLesson &&
 												<Button
-													color="contrast"
+													color="default"
 													onClick={() => {
-														exportToPDF(profile.lessons[currentLesson])
+														exportToPDF(currentLesson)
 													}}
 												>
 													Download Lesson
@@ -158,10 +142,11 @@ class NavBar extends React.Component {
 													aria-owns={open ? 'create project' : null}
 													aria-haspopup="true"
 													onClick={this.handleMenu}
-													color="contrast"
+													color="default"
 												>
-													Hello {profile.displayName}
-													<AccountCircle style={{marginLeft: '5px'}}/>
+													<Avatar aria-label="Owner">
+														{profile && profile.displayName && profile.displayName.split(' ').map(word => word[0]).join('')}
+													</Avatar>
 
 												</Button>
 												<Menu
@@ -191,9 +176,7 @@ class NavBar extends React.Component {
 										);
 									} else {
 										return (
-											<Button
-												color="contrast"
-												disableRipple>Hello {profile.displayName}</Button>
+											null
 											)
 
 									}
@@ -209,7 +192,7 @@ class NavBar extends React.Component {
 				<Drawer open={this.state.left} onClose={this.closeDrawer}>
 					<List className={classes.list}>
 						<ListItem>
-							<Typography type="title" color="inherit" className={classes.flex}>
+							<Typography type="title" color="default" className={classes.flex}>
 								Project Based Curriculum Planner
 							</Typography>
 						</ListItem>
@@ -221,7 +204,7 @@ class NavBar extends React.Component {
 						}}>
 							<ListItem
 								button
-								color="contrast"
+								color="default"
 							>
 								<ListItemIcon>
 									<DashboardIcon />
@@ -233,9 +216,9 @@ class NavBar extends React.Component {
 						{!onDashboard &&
 						<ListItem
 							button
-							color="contrast"
+							color="default"
 							onClick={() => {
-								exportToPDF(profile.lessons[currentLesson])
+								exportToPDF(currentLesson)
 							}}
 						>
 							<ListItemIcon>
@@ -271,45 +254,6 @@ NavBar.propTypes = {
 NavBar = withStyles(styles)(NavBar);
 
 export default compose(
-	firebaseConnect(), // withFirebase can also be used
+	firebaseConnect(),
 	connect(({ firebase: { auth, profile } }) => ({ auth, profile }))
 )(NavBar)
-
-
-// <Button
-// aria-owns={openLessons ? 'my-projects' : null}
-// aria-haspopup="true"
-// onClick={this.handleLessonsMenu}
-// color="contrast"
-// 	>
-// 	My Projects
-// </Button>
-// <Menu
-// 	id="my-projects"
-// 	anchorEl={anchorLessons}
-// 	anchorOrigin={{
-// 		vertical: 'top',
-// 		horizontal: 'right',
-// 	}}
-// 	transformOrigin={{
-// 		vertical: 'top',
-// 		horizontal: 'right',
-// 	}}
-// 	open={openLessons}
-// 	onClose={this.handleCloseLessons}
-// >
-// 	{lessons.map((lesson, index) => (
-// 		<Link
-// 			key={index}
-// 			to={{
-// 				pathname: '/planner',
-// 				state: { currentLesson: lesson }
-// 			}}>
-// 			<MenuItem
-//
-// 				onClick={this.handleClose}>
-// 				{lesson}
-// 			</MenuItem>
-// 		</Link>
-// 	))}
-// </Menu>

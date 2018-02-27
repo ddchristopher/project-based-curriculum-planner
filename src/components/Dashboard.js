@@ -1,38 +1,61 @@
 import React, { Component } from 'react';
 import {
 	Link,
-	Redirect,
 } from 'react-router-dom'
 import NavBar from './NavBar'
+import Divider from 'material-ui/Divider';
 import { CircularProgress } from 'material-ui/Progress';
 import Typography from 'material-ui/Typography';
-import Card, { CardActions, CardContent } from 'material-ui/Card';
 import Button from 'material-ui/Button';
-import AddIcon from 'material-ui-icons/Add';
+import Tabs, { Tab } from 'material-ui/Tabs';
 import { connect } from 'react-redux'
 import { compose } from 'redux'
 import { firebaseConnect, isLoaded, isEmpty } from 'react-redux-firebase'
-import { withStyles } from 'material-ui/styles';
-import exportToPDF from '../utils/exportToPDF'
 import LoginScreen from './LoginScreen';
-import Divider from 'material-ui/Divider';
-import Dialog, { DialogTitle } from 'material-ui/Dialog';
-import List, {
-	ListItem,
-	ListItemIcon,
-	ListItemSecondaryAction,
-	ListItemText,
-	ListSubheader,
-} from 'material-ui/List';
-import DashboardIcon from 'material-ui-icons/Dashboard';
 import Paper from 'material-ui/Paper';
+import MyProjects from './MyProjects'
+import SharedProjects from './SharedProjects'
+import AppBar from 'material-ui/AppBar';
+import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
+import MediaQuery from 'react-responsive';
+import AddIcon from 'material-ui-icons/Add';
+
+const tabsStyle = createMuiTheme({
+	overrides: {
+		MuiTabs: {
+			flexContainer: {
+				justifyContent: "space-evenly"
+			},
+		},
+	},
+});
+
+function TabContainer(props) {
+	return (
+		<div>
+			{props.children}
+		</div>
+	);
+}
+
 
 
 class Dashboard extends Component {
+
+
+
 	state = {
 		currentStage: 3,
-		confirmDeleteItem: ''
+		confirmDeleteItem: '',
+		open: false,
+		lessonToShare: '',
+		emailToShareWith: '',
+		value: 0,
 	}
+
+	handleChange = (event, value) => {
+		this.setState({ value });
+	};
 
 	changeStage = (stage) => {
 		this.setState({
@@ -40,20 +63,30 @@ class Dashboard extends Component {
 		})
 	}
 
+	getSharedLessons = (sharedLessons) => {
+		this.setState({
+			sharedLessons: sharedLessons
+		})
+	}
+
+
+
 	render() {
-		const { stage1, stage2, stage3, stage4, firebase, profile, classes } = this.props
+		const { stage1, stage2, stage3, stage4, firebase, profile, classes, auth } = this.props
+		const { value } = this.state
 		const stageList = !isLoaded(stage1, stage2, stage3, stage4)
 			? 'Loading'
 			: isEmpty(stage1, stage2, stage3, stage4)
 				? ''
 				: [stage1, stage2, stage3, stage4]
-		const lessons = !isLoaded(profile) ?
+
+		const sharedLessons = !isLoaded(profile) ?
 			(['Loading...']) :
 			isEmpty(profile) ? (['Loading...']):
-				profile.lessons ?
-				(Object.keys(profile.lessons).map((lesson) => {
-					return profile.lessons[lesson].title
-				})) : []
+				profile.lessonsSharedWithMe ?
+					(Object.keys(profile.lessonsSharedWithMe).map((id) => {
+						return id
+					})) : []
 
 
 		return (
@@ -69,128 +102,103 @@ class Dashboard extends Component {
 						<LoginScreen/>
 				) : (
 					<div>
-						<NavBar onDashboard={true}/>
+						<NavBar
+							onDashboard={true}/>
 						<div className='dashboard'>
-							<Typography type='display2' gutterBottom>
-								My Dashboard
-							</Typography>
 							<div className="add-card">
 								<Link to={{
 									pathname: '/planner',
 									state: { newLesson: true }
-								}}>
-									<Button style={{width: '300px', height: '50px'}}
-										color="primary" raised aria-label="add"
-									>
-										Create a New Project
-									</Button>
+								}}
+								>
+									<MediaQuery minWidth={1000}>
+										{(matches) => {
+											if (matches) {
+												return (
+													<Button style={{width: '250px', height: '64px'}}
+													        color="primary"
+													        raised
+													        aria-label="add"
+													>
+														Create a New Project
+													</Button>
+												);
+											} else {
+												return (
+													<Button
+														fab
+														color="primary" aria-label="add"
+													>
+														<AddIcon />
+													</Button>
+												);
+											}
+										}}
+									</MediaQuery>
 								</Link>
 							</div>
 							<div className="dashboard-content">
+								<AppBar
+									className='project-bar'
+									color='inherit'
+									elevation={1}
+									position="static">
+									<MuiThemeProvider theme={tabsStyle}>
+										<Tabs
+											value={value}
+											onChange={this.handleChange}>
+											<Tab label="My Projects" />
+											<Tab label="Shared Projects" />
+										</Tabs>
+									</MuiThemeProvider>
+								</AppBar>
+									<Paper className="project-list" elevation={1}>
 
-									<Paper className="project-list" elevation={4}>
-										<Typography type='display1' className="project-header" gutterBottom>
-											My Projects
-										</Typography>
-										<div className="my-projects">
-											{lessons.map((lesson, index) => (
-												<Paper elevation={1} key={index} className="project">
-													<div className="project-title">
-														<Typography type='display1'>
-															{lesson}
+										{value === 0 &&
+											<TabContainer>
+													{profile.lessonIDs &&
+													Object.keys(profile.lessonIDs).length > 0 ? (
+														<div className="my-projects">
+															{profile.lessonIDs && Object.keys(profile.lessonIDs).map((lesson, index) => (
+																<MyProjects
+																	key={index}
+																	lessonID={lesson}
+																	lessonTitle={profile.lessonIDs[lesson]}
+																	index={index}
+																	profile={profile}
+																	uid={auth.uid}
+																/>
+															))}
+														</div>
+													) : (
+														<Typography
+															style={{margin: '25px'}}
+															type='title'
+														>
+															You haven't created any projects yet...
 														</Typography>
-													</div>
-													<Divider/>
-													<div className="project-options">
-														{this.state.confirmDeleteItem === index ? (
-															<div>
-																<Typography type='display1' gutterBottom>
-																	Confirm Delete
-																</Typography >
-																<Button raised
-																        onClick={() => {
-																	        const lessons = { ...profile.lessons }
-																	        lessons[lesson] = undefined
-																	        delete lessons[lesson]
-																	        firebase.updateProfile(
-																		        { lessons }
-																	        )
-																	        this.setState({
-																		        confirmDeleteItem: ''
-																	        })
-																        }}
-																        style={{
-																	color: 'white',
-																	backgroundColor: 'red',
-																	marginRight: '15px'
-																}}>
-																	Delete
-																</Button>
-																<Button raised
-																        color="primary"
-																        onClick={() => this.setState({
-																	        confirmDeleteItem: ''
-																        })}
-																>
-																	Cancel
-																</Button>
-															</div>
-														) : (
-															<div>
-																<Link to={{
-																	pathname: '/planner',
-																	state: { currentLesson: lesson }
-																}}>
-																	<Button className="dashboard-button" raised color='default'>Edit</Button>
-																</Link>
-																<Button className="dashboard-button"
-																        raised
-																        color='default'
-																        onClick={() => this.setState({
-																	        confirmDeleteItem: index
-																        })}
-																>
-																	Delete</Button>
-
-
-																<Button className="dashboard-button" raised  color='default'>Share</Button>
-																<Button
-																	className="dashboard-button"
-																	raised
-																	color='primary'
-																	onClick={() => {
-																		console.log(profile.lessons[lesson])
-																		exportToPDF(profile.lessons[lesson])
-																	}}
-																>Download</Button>
-															</div>
-														)}
-													</div>
-												</Paper>
-											))}
-										</div>
+													)}
+											</TabContainer>}
+										{value === 1 &&
+											<TabContainer>
+												<div className="my-projects">
+													{sharedLessons.map((lesson, index) => (
+														<SharedProjects
+															key={index}
+															lessonID={lesson}
+															lessonTitle={profile.lessonsSharedWithMe[lesson]}
+															index={index}
+															profile={profile}
+															uid={auth.uid}
+														/>
+													))}
+												</div>
+											</TabContainer>}
 
 
 
 									</Paper>
 
-
-
-									<Paper className="project-list" style={{marginTop: '25px'}} elevation={4}>
-										<Typography type='display1' className="project-header" gutterBottom>
-											Projects Shared With Me
-										</Typography>
-										<div className="my-projects">
-											<List>
-												<ListItem>
-													<ListItemText />
-													<ListItemSecondaryAction>
-													</ListItemSecondaryAction>
-												</ListItem>
-											</List>
-										</div>
-
-									</Paper>
 
 							</div>
 						</div>
@@ -204,45 +212,25 @@ class Dashboard extends Component {
 	}
 }
 
-
-export default compose(
-	firebaseConnect([
+const enhance = compose(
+	firebaseConnect(props => ([
 		'stage1',
 		'stage2',
 		'stage3',
-		'stage4', // { path: '/todos' } // object notation
-		'profile'
-	]),
+		'stage4',
+		'profile',
+		'auth',
+	])),
 	connect(
-		(state) => ({
+		(state, props) => ({
 			stage1: state.firebase.data.stage1,
 			stage2: state.firebase.data.stage2,
 			stage3: state.firebase.data.stage3,
 			stage4: state.firebase.data.stage4,
-			profile: state.firebase.profile
-			// load profile
+			profile: state.firebase.profile,
+			auth: state.firebase.auth
 		})
 	)
-)(Dashboard)
+)
 
-
-//
-// <NavBar/>
-// <div className="progressTop">
-// 	<TopProgressBar/>
-// 	</div>
-//
-// <div className="lessonBoard">
-// 	<div className="lessonMap">
-// 		<LessonMap/>
-// 	</div>
-//
-// 	<div className="workSpace">
-// 		<WorkSpace/>
-// 	</div>
-//
-// 	<div className="resources">
-// 		<Resources/>
-// 	</div>
-//
-// </div>
+export default enhance(Dashboard)

@@ -29,7 +29,7 @@ class LessonPlanner extends Component {
 	}
 
 	render() {
-		const { currentStage, currentLesson } = this.props
+		const { currentStage, currentLesson, sharedEdit, currentLessonID } = this.props
 		const { currentQuestion } = this.state
 
 		return (
@@ -44,6 +44,7 @@ class LessonPlanner extends Component {
 							}}
 							currentLesson={currentLesson}
 							changeQuestion={(question) => this.changeQuestion(question)}
+							sharedEdit={sharedEdit}
 
 						/>
 					</div>
@@ -56,7 +57,9 @@ class LessonPlanner extends Component {
 								currentQuestion: currentStage.currentStage[currentQuestion]
 							}}
 							currentLesson={currentLesson}
-							key={currentLesson}
+							currentLessonID={currentLessonID}
+							sharedEdit={sharedEdit}
+
 						/>
 					</div>
 
@@ -67,6 +70,7 @@ class LessonPlanner extends Component {
 								questionIndex: currentQuestion,
 								currentQuestion: currentStage.currentStage[currentQuestion]
 							}}
+							sharedEdit={sharedEdit}
 						/>
 					</div>
 				</div>
@@ -78,24 +82,3 @@ class LessonPlanner extends Component {
 
 
 export default LessonPlanner
-
-//
-// <NavBar/>
-// <div className="progressTop">
-// 	<TopProgressBar/>
-// 	</div>
-//
-// <div className="lessonBoard">
-// 	<div className="lessonMap">
-// 		<LessonMap/>
-// 	</div>
-//
-// 	<div className="workSpace">
-// 		<WorkSpace/>
-// 	</div>
-//
-// 	<div className="resources">
-// 		<Resources/>
-// 	</div>
-//
-// </div>

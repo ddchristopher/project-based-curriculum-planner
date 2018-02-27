@@ -14,6 +14,10 @@ import { firebaseConnect, isLoaded, isEmpty } from 'react-redux-firebase'
 import Button from 'material-ui/Button';
 import Typography from 'material-ui/Typography';
 import TextField from 'material-ui/TextField';
+import Snackbar from 'material-ui/Snackbar';
+import IconButton from 'material-ui/IconButton';
+import CloseIcon from 'material-ui-icons/Close';
+import moment from 'moment';
 
 
 const styles = theme => ({
@@ -34,6 +38,11 @@ class Main extends Component {
 		currentStage: 0,
 		lessonTitle: '',
 		lessonSubject: '',
+		open: false
+	}
+
+	componentDidMount() {
+		window.scrollTo(0, 0)
 	}
 
 	changeStage = (stage) => {
@@ -49,11 +58,23 @@ class Main extends Component {
 		});
 	};
 
+	handleClick = () => {
+		this.setState({ open: true });
+	};
+
+	handleClose = (event, reason) => {
+		if (reason === 'clickaway') {
+			return;
+		}
+
+		this.setState({ open: false });
+	};
+
 	render() {
-		const { stage1, stage2, stage3, stage4, firebase, profile, classes } = this.props
+		const { stage1, stage2, stage3, stage4, firebase, profile, classes, lesson } = this.props
 		const newLesson = this.props.location.state ?
-			this.props.location.state.newLesson ? true
-				: this.props.location.state.currentLesson && false
+			this.props.location.state.newLesson ?
+				true : this.props.location.state.currentLesson && false
 			:
 			true
 		const { currentStage} = this.state
@@ -62,11 +83,16 @@ class Main extends Component {
 			: isEmpty(stage1, stage2, stage3, stage4)
 				? []
 				: [stage1, stage2, stage3, stage4]
+
+		const lessonToCreate = firebase.database().ref('lessons').push()
+
+
 		return (
 			<div>
 				<NavBar
 					onDashboard={false}
-					currentLesson={this.props.location.state && this.props.location.state.currentLesson && this.props.location.state.currentLesson}
+					newLesson={newLesson}
+					currentLesson={lesson}
 				/>
 				{isLoaded(profile) === false ? (
 						<div className="login-screen">
@@ -80,8 +106,8 @@ class Main extends Component {
 						newLesson ?
 							(
 								<div className="dashboard">
-									<Typography type='display2' gutterBottom>
-										New Lesson
+									<Typography type='display2' style={{marginTop: '64px'}} gutterBottom>
+										New Project
 									</Typography>
 									<form
 										className="new-lesson"
@@ -107,54 +133,106 @@ class Main extends Component {
 											margin="normal"
 										/>
 									</form>
-									<Link to={{
-										pathname: this.state.lessonTitle.length > 0 ? '/planner' : '/dashboard',
-										state: { currentLesson: this.state.lessonTitle }
-									}}>
+									<Link
+										to={{
+											pathname: '/planner',
+											state: {
+												currentLesson: this.state.lessonTitle,
+												currentLessonID: lessonToCreate.key
+											}
+										}}
+										onClick={(e) => {
+											if (this.state.lessonTitle.length <= 0 || (profile.lessons && profile.lessons[this.state.lessonTitle])) {
+												e.preventDefault()
+											}
+										}}
+									>
 										<Button
 											raised
 											color="primary"
 											className={classes.button}
 											disabled={this.state.lessonTitle.length > 0 ? false: true}
-											onClick={() => firebase.updateProfile(
-												{ lessons:
-													{
-														...profile.lessons,
-														[this.state.lessonTitle]: {
+											onClick={() => {
+												if (profile.lessons && profile.lessons[this.state.lessonTitle]) {
+													this.handleClick()
+												} else {
+													firebase.updateProfile({
+														lessonIDs: {
+															...profile.lessonIDs,
+															[lessonToCreate.key]: this.state.lessonTitle.trim()
+														}
+													})
+													lessonToCreate.set(
+														{
 															title: this.state.lessonTitle.trim(),
 															subject: this.state.lessonSubject.trim(),
-															}
-													}
+															owner: this.props.auth.uid,
+															ownerName: profile.displayName,
+															ownerAvatar: profile.avatarUrl,
+															dateModified: moment().format('MMMM Do YYYY, h:mm:ss a'),
+															newProject: [true,true,true,true]
+														}
+													)
 												}
-											)}
+
+											}}
 										>
 											Submit
 										</Button>
 									</Link>
+
+									<Snackbar
+										anchorOrigin={{
+											vertical: 'bottom',
+											horizontal: 'center',
+										}}
+										open={this.state.open}
+										autoHideDuration={4000}
+										onClose={this.handleClose}
+										SnackbarContentProps={{
+											'aria-describedby': 'message-id',
+										}}
+										message={<span id="message-id">A lesson with this title already exists</span>}
+										action={[
+											<IconButton
+												key="close"
+												aria-label="Close"
+												color="inherit"
+												className={classes.close}
+												onClick={this.handleClose}
+											>
+												<CloseIcon />
+											</IconButton>,
+										]}
+									/>
 								</div>
 							)
 							:
 							(
 								<div>
-										<TopProgressBar
-											stages={stageList}
-											currentStage={currentStage}
-											changeStage={(stage) => this.changeStage(stage)}
-											currentLesson={this.props.location.state.currentLesson && this.props.location.state.currentLesson}
-										/>
+									<TopProgressBar
+										stages={stageList}
+										currentStage={currentStage}
+										changeStage={(stage) => this.changeStage(stage)}
+										currentLesson={this.props.lesson}
+										sharedEdit={this.props.location.state.sharedEdit ? this.props.location.state.sharedEdit : false}
+									/>
 									<LessonPlanner
 										stages={stageList}
 										currentStage={{
 											stageIndex: currentStage,
 											currentStage: stageList[currentStage],
 										}}
-										currentLesson={this.props.location.state.currentLesson && this.props.location.state.currentLesson}
+										currentLesson={this.props.lesson}
+										currentLessonID={this.props.location.state.currentLessonID && this.props.location.state.currentLessonID}
+										sharedEdit={this.props.location.state.sharedEdit ? this.props.location.state.sharedEdit : false}
 									/>
 								</div>
 							)
 
-						)}
+					)}
 			</div>
+
 		);
 	}
 }
@@ -162,45 +240,29 @@ class Main extends Component {
 Main = withStyles(styles)(Main)
 
 export default compose(
-	firebaseConnect([
+	firebaseConnect(props => [
 		'stage1',
 		'stage2',
 		'stage3',
-		'stage4', // { path: '/todos' } // object notation
+		'stage4',
 		'profile',
-		'auth'
+		'auth',
+		{
+			path: `lessons/${props.location.state ? props.location.state.currentLessonID : ''}`,
+			storeAs: props.location.state ? props.location.state.currentLessonID : 'lesson'
+		}
 	]),
 	connect(
-		(state) => ({
+		(state, props) => ({
 			stage1: state.firebase.data.stage1,
 			stage2: state.firebase.data.stage2,
 			stage3: state.firebase.data.stage3,
 			stage4: state.firebase.data.stage4,
 			profile: state.firebase.profile,
+			lesson: state.firebase.data[props.location.state ? props.location.state.currentLessonID : 'lesson'],
 			auth: state.firebase.auth
-			// load profile
 		})
 	)
 )(Main)
 
 
-//
-// <NavBar/>
-// <div className="progressTop">
-// 	<TopProgressBar/>
-// 	</div>
-//
-// <div className="lessonBoard">
-// 	<div className="lessonMap">
-// 		<LessonMap/>
-// 	</div>
-//
-// 	<div className="workSpace">
-// 		<WorkSpace/>
-// 	</div>
-//
-// 	<div className="resources">
-// 		<Resources/>
-// 	</div>
-//
-// </div>

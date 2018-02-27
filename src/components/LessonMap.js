@@ -59,15 +59,6 @@ class LessonMap extends React.Component {
 		}
 	}
 
-
-	isLastStep() {
-		return this.state.activeStep === this.totalSteps() - 1;
-	}
-
-	allStepsCompleted() {
-		return this.completedSteps() === this.totalSteps();
-	}
-
 	handleNext = () => {
 		this.setState({
 			activeStep: this.state.activeStep + 1,
@@ -103,14 +94,16 @@ class LessonMap extends React.Component {
 			currentStage,
 			currentQuestion,
 			profile,
-			firebase } = this.props
+			firebase,
+			sharedEdit
+		} = this.props
 		const { activeStep } = this.state
-		const currentLessonStage = profile.lessons[currentLesson][`stage${currentStage.stageIndex + 1}`]
-		const currentLessonQuestion = currentLessonStage && profile.lessons[currentLesson][`stage${currentStage.stageIndex + 1}`][currentQuestion.questionIndex]
+		const currentLessonStage = currentLesson && currentLesson[`stage${currentStage.stageIndex + 1}`]
+
 
 		return (
 			<div className={classes.root}>
-				<MediaQuery minDeviceWidth={900}>
+				<MediaQuery minWidth={900}>
 					{(matches) => {
 						if (matches) {
 							return (
@@ -192,7 +185,7 @@ LessonMap.propTypes = {
 LessonMap = withStyles(styles, { withTheme: true})(LessonMap);
 
 export default compose(
-	withFirebase, // add props.firebase (firebaseConnect() can also be used)
+	withFirebase,
 	connect(
 		({ firebase: { profile } }) => ({
 			profile

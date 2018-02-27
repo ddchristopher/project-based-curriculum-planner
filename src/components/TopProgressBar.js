@@ -1,17 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
-import Stepper, { Step, StepButton } from 'material-ui/Stepper';
-import Button from 'material-ui/Button';
 import Typography from 'material-ui/Typography';
 import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
 import MediaQuery from 'react-responsive';
 import Tabs, { Tab } from 'material-ui/Tabs';
 import AppBar from 'material-ui/AppBar';
-import MobileStepper from 'material-ui/MobileStepper';
-import Paper from 'material-ui/Paper';
-import KeyboardArrowLeft from 'material-ui-icons/KeyboardArrowLeft';
-import KeyboardArrowRight from 'material-ui-icons/KeyboardArrowRight';
 import BuildIcon from 'material-ui-icons/Build';
 import ClassIcon from 'material-ui-icons/Class';
 import GroupIcon from 'material-ui-icons/Group';
@@ -39,7 +33,11 @@ const styles = theme => ({
 		height: 25,
 	},
 	title : {
-		margin: theme.spacing.unit * 3,
+		marginTop: '80px',
+		paddingLeft: theme.spacing.unit * 3,
+		paddingBottom: theme.spacing.unit * 2,
+		backgroundColor: '#f5f5f5'
+
 	},
 	button: {
 		marginRight: theme.spacing.unit,
@@ -64,7 +62,7 @@ const tabsStyle = createMuiTheme({
 });
 
 const getSteps = () => {
-	return ['Building the field', 'Academic Discourse and Skills', 'Joint Construction', 'Independent Production & Assessment'];
+	return ['Independent Production & Assessment', 'Building the field', 'Academic Discourse and Skills', 'Joint Construction', ];
 }
 
 const getIcons = () => {
@@ -93,32 +91,6 @@ class TopProgressBar extends React.Component {
 		return getSteps().length;
 	};
 
-	isLastStep() {
-		return this.state.activeStep === this.totalSteps() - 1;
-	}
-
-	allStepsCompleted() {
-		return this.completedSteps() === this.totalSteps();
-	}
-
-	handleNext = () => {
-		this.setState({
-			activeStep: this.state.activeStep + 1,
-		});
-	};
-
-	handleBack = () => {
-		this.setState({
-			activeStep: this.state.activeStep - 1,
-		});
-	};
-
-
-	handleStep = step => () => {
-		this.setState({
-			activeStep: step,
-		}, () => this.props.changeStage(this.state.activeStep));
-	};
 
 	handleChange = (event, value) => {
 		this.setState({
@@ -130,26 +102,28 @@ class TopProgressBar extends React.Component {
 
 
 	render() {
-		const { classes, theme, currentLesson } = this.props;
+		const { classes, currentLesson, currentLessonTitle, sharedEdit, currentLessonID } = this.props;
 		const steps = getSteps();
 		const icons = getIcons();
-		const { activeStep, value } = this.state;
+		const { activeStep } = this.state;
 
 		return (
 			<div className={classes.root}>
-				<MediaQuery minDeviceWidth={900}>
+				<MediaQuery minWidth={900}>
 					{(matches) => {
 						if (matches) {
 
 
 							return (
-								<div>
-									<Typography className={classes.title} type='display1'>
-										{currentLesson}
-									</Typography>
+								<div style={{marginTop: 70}}>
+									<div className={classes.title}>
+										<Typography  type='display1'>
+											{currentLesson ? currentLesson.title : null}
+										</Typography>
+									</div>
 									<AppBar
 										position="static"
-										color="default"
+										color="inherit"
 									>
 										<MuiThemeProvider theme={tabsStyle}>
 											<Tabs
@@ -175,7 +149,7 @@ class TopProgressBar extends React.Component {
 
 						} else {
 							return (
-								<div>
+								<div style={{marginTop: 64}}>
 									<AppBar
 										position="static"
 										color="default"
@@ -209,30 +183,6 @@ class TopProgressBar extends React.Component {
 						}
 					}}
 				</MediaQuery>
-
-				{/*{steps.map((step, index) => {*/}
-					{/*return (*/}
-						{/*<Tab*/}
-							{/*key={index}*/}
-							{/*label={step} />*/}
-					{/*)*/}
-				{/*})}*/}
-
-				{/*<Stepper className={classes.progressBar} nonLinear activeStep={activeStep}>*/}
-					{/*{steps.map((label, index) => {*/}
-						{/*return (*/}
-							{/*<Step key={label}>*/}
-								{/*<StepButton*/}
-									{/*className={classes.stepText}*/}
-									{/*onClick={this.handleStep(index)}*/}
-									{/*completed={this.state.completed[index]}*/}
-								{/*>*/}
-									{/*{label}*/}
-								{/*</StepButton>*/}
-							{/*</Step>*/}
-						{/*);*/}
-					{/*})}*/}
-				{/*</Stepper>*/}
 			</div>
 		);
 	}

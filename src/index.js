@@ -9,22 +9,15 @@ import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
 import { reactReduxFirebase, firebaseReducer, getFirebase } from 'react-redux-firebase'
 import ReduxThunk from 'redux-thunk'
 import { Provider } from 'react-redux';
-import { currentLesson } from "./reducers";
-import reducer from './reducers/index'
 
 const config = {
-	apiKey: "AIzaSyBAy8OJpBF92KMrIZADv0npaNwTK-IsWMI",
-	authDomain: "project-based-plann.firebaseapp.com",
-	databaseURL: "https://project-based-plann.firebaseio.com",
-	projectId: "project-based-plann",
-	storageBucket: "project-based-plann.appspot.com",
-	messagingSenderId: "1047477395421"
+	//your firebase configuration
 }
 
 const rrfConfig = {
 	userProfile: 'users',
-	attachAuthIsReady: true, // attaches auth is ready promise to store
-	firebaseStateName: 'firebase' // should match the reducer name ('firebase' is default)
+	attachAuthIsReady: true,
+	firebaseStateName: 'firebase'
 }
 
 
@@ -37,7 +30,6 @@ const createStoreWithFirebase = compose(
 
 const rootReducer = combineReducers({
 	firebase: firebaseReducer,
-	currentLesson: currentLesson
 })
 
 
@@ -56,7 +48,7 @@ const store = createStoreWithFirebase(
 
 const waitForAuth = () => {
 	store.firebaseAuthIsReady.then(() => {
-		console.log('Auth has loaded') // eslint-disable-line no-console
+		console.log('Auth has loaded')
 	})
 	return store;
 }
@@ -71,4 +63,3 @@ ReactDOM.render(
 	</Provider>,
 	document.getElementById('root'));
 registerServiceWorker();
-

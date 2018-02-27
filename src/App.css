@@ -1,9 +1,22 @@
+body {
+  background: #f5f5f5;
+  margin-left: calc(100vw - 100%);
+}
+
 a {
   text-decoration: none;
 }
 
 a:visited {
   color: white;
+}
+
+.top-bar {
+  max-height: 80px;
+}
+
+.project-bar {
+  max-height: 50px;
 }
 
 .lessonBoard {
@@ -96,28 +109,29 @@ a:visited {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  margin-top: 25px;
+  padding-top: 64px;
 }
 
 .dashboard-content {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
+
 }
 
-
-
 .project-list {
-  width: 40%;
-  padding: 16px;
-  margin: 0 15px;
+  position: absolute;
+  margin: auto;
+  bottom: 0;
+  width: 85vw;
+  height: calc(100% - 130px);
+  overflow-y: scroll;
 }
 
 .project-header {
   padding: 25px;
+  text-align: center;
 }
 
 .project-title {
@@ -141,26 +155,38 @@ a:visited {
 }
 
 .add-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-top: 35px;
-  margin-bottom: 35px;
-  width: 25%;
+  position: absolute;
+  z-index: 9999;
+  top: 0;
+
 }
 
 .my-projects {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
 }
 
 .project {
-  margin-bottom: 25px;
-  padding: 15px 15px;
-  width: 40%;
+  box-sizing: border-box;
+  padding: 0 35px;
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.project:hover {
+  background: #fafafa;
+}
+
+.project-card-top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .shared-projects {
@@ -205,22 +231,52 @@ a:visited {
   flex-wrap: wrap;
 }
 
-.progress-tab {
+.sharing-dialog {
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
 }
 
+.overview-dialog {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.workspace-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
 @media screen and (max-width: 1000px) {
+  .dashboard {
+    padding-top: 55px;
+  }
+
   .dashboard-content {
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
     flex-wrap: wrap;
-    justify-content: center;
     align-items: center;
     width: 100%;
   }
 
   .project-list {
-    width: 85%;
+    position: absolute;
+    margin: auto;
+    bottom: 0;
+    height: calc(100% - 130px);
+    width: 100vw;
+    overflow-y: scroll;
   }
 
   .my-projects {
@@ -231,16 +287,31 @@ a:visited {
     align-items: center;
   }
 
-  .project-header {
-    text-align: center;
-  }
 
   .project {
-    width: 85%;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 10px;
+  }
+
+
+  .project-card-top {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 
   .new-lesson {
     width: 85%;
+  }
+
+  .add-card {
+    position: fixed;
+    top: initial;
+    bottom: 0;
+    right: 0;
+    margin: 15px;
   }
 }
 
@@ -278,7 +349,6 @@ a:visited {
   .resources-mobile {
     margin-top: 15px;
   }
-
 
 }
 
